@@ -98,6 +98,11 @@ const ShipFeed = ({ user }: Props) => {
     return <div className="max-w-2xl mx-auto p-4">Loading...</div>;
   }
 
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return '';
+    return new Date(dateString).toLocaleDateString();
+  };
+
   return (
     <div className="max-w-2xl mx-auto p-4">
       {/* Header */}
@@ -156,7 +161,7 @@ const ShipFeed = ({ user }: Props) => {
                 {post.users?.avatar_url ? (
                   <img 
                     src={post.users.avatar_url} 
-                    alt={post.users.full_name} 
+                    alt={post.users.full_name || 'User avatar'} 
                     className="w-8 h-8 rounded-full"
                   />
                 ) : (
@@ -174,7 +179,7 @@ const ShipFeed = ({ user }: Props) => {
                 </div>
                 <div className="font-medium">{post.content}</div>
                 <div className="text-gray-500 text-sm mt-1">
-                  {new Date(post.created_at).toLocaleDateString()}
+                  {formatDate(post.created_at)}
                 </div>
               </div>
             </div>
