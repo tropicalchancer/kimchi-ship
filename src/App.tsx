@@ -1,8 +1,10 @@
 // src/App.tsx
 import { useEffect, useState } from 'react'
 import { Session, User } from '@supabase/supabase-js'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { supabase } from './lib/supabase'
 import ShipFeed from './components/ShipFeed'
+import UserProfile from './components/UserProfile'
 import Auth from './components/Auth'
 import { Database } from './lib/database.types'
 
@@ -53,7 +55,7 @@ function App() {
       .insert({
         id: authUser.id,
         full_name: authUser.email?.split('@')[0] || 'Anonymous',
-        email: authUser.email || '',  // Make sure email is never undefined
+        email: authUser.email || '',
         avatar_url: null,
         current_streak: 0,
         longest_streak: 0,
@@ -71,13 +73,22 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {!session ? (
-        <Auth />
-      ) : (
-        <ShipFeed key={user?.id} user={user} />
-      )}
-    </div>
+    <BrowserRouter>
+      <div className="min-h-screen bg-gray-50">
+        {!session ? (
+          <Auth />
+        ) : (
+          <Routes>
+            <Route path="/" element={<ShipFeed key={user?.id} user={user} />} />
+            <Route 
+              path="/profile/:userId" 
+              element={<UserProfile currentUser={session.user} />} 
+            />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        )}
+      </div>
+    </BrowserRouter>
   )
 }
 

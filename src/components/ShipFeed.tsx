@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Link, LogOut } from 'lucide-react';
+import { Link as LinkIcon, LogOut } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Database } from '../lib/database.types';
 
@@ -126,7 +127,9 @@ const ShipFeed = ({ user }: Props) => {
             <p className="text-gray-600">Share what you shipped today</p>
             {user && (
               <p className="text-sm text-gray-500 mt-2">
-                Current streak: {user.current_streak ?? 0} 🌶️
+                <Link to={`/profile/${user.id}`} className="hover:text-gray-700">
+                  Current streak: {user.current_streak ?? 0} 🌶️
+                </Link>
               </p>
             )}
           </div>
@@ -162,7 +165,7 @@ const ShipFeed = ({ user }: Props) => {
                 type="button" 
                 className="text-gray-500 hover:text-gray-700 transition-colors"
               >
-                <Link size={20} />
+                <LinkIcon size={20} />
               </button>
               <button
                 type="submit"
@@ -184,7 +187,10 @@ const ShipFeed = ({ user }: Props) => {
         {posts.map(post => (
           <div key={post.id} className="bg-white rounded-lg p-4 shadow-sm border">
             <div className="flex gap-3">
-              <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center">
+              <Link 
+                to={`/profile/${post.user_id}`}
+                className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center hover:opacity-90"
+              >
                 {post.users?.avatar_url ? (
                   <img 
                     src={post.users.avatar_url} 
@@ -194,10 +200,15 @@ const ShipFeed = ({ user }: Props) => {
                 ) : (
                   post.users?.full_name?.[0] || 'A'
                 )}
-              </div>
+              </Link>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="font-medium">{post.users?.full_name || 'Anonymous'}</span>
+                  <Link 
+                    to={`/profile/${post.user_id}`}
+                    className="font-medium hover:text-gray-600"
+                  >
+                    {post.users?.full_name || 'Anonymous'}
+                  </Link>
                   {(post.users?.current_streak ?? 0) > 0 && (
                     <span className="text-sm text-gray-500">
                       {post.users.current_streak} 🌶️
