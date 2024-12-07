@@ -4,11 +4,17 @@ import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Database } from '../lib/database.types';
 
-type Project = Database['public']['Tables']['projects']['Row'];
-type Post = Database['public']['Tables']['posts']['Row'];
+type Tables = Database['public']['Tables'];
+type Project = Tables['projects']['Row'];
+type Post = Tables['posts']['Row'];
 
-interface ProjectWithPosts extends Project {
+// Define what Supabase returns with nested posts
+type ProjectWithNestedPosts = Project & {
   posts: Post[];
+};
+
+// Our final project type with count
+interface ProjectWithPosts extends ProjectWithNestedPosts {
   _count: {
     posts: number;
   };
@@ -17,7 +23,6 @@ interface ProjectWithPosts extends Project {
 const Projects = () => {
   const [projects, setProjects] = useState<ProjectWithPosts[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
   const [newProjectDesc, setNewProjectDesc] = useState('');
@@ -31,32 +36,26 @@ const Projects = () => {
     try {
       setLoading(true);
       
-      // Fetch projects with post counts and latest posts
       const { data, error } = await supabase
         .from('projects')
         .select(`
           *,
-          posts (
-            id,
-            content,
-            created_at,
-            user_id
-          )
+          posts (*)
         `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      const projectsWithCounts = data?.map(project => ({
+      const projectsWithCounts = (data as ProjectWithNestedPosts[] || []).map(project => ({
         ...project,
         _count: {
           posts: project.posts?.length || 0
         }
-      })) || [];
+      }));
 
       setProjects(projectsWithCounts);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load projects');
+      console.error('Failed to load projects:', err);
     } finally {
       setLoading(false);
     }
@@ -69,26 +68,35 @@ const Projects = () => {
     try {
       setCreating(true);
       
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+
       const { data: project, error } = await supabase
         .from('projects')
         .insert({
           name: newProjectName.trim(),
           description: newProjectDesc.trim() || null,
+          user_id: userData.user.id,
           created_at: new Date().toISOString()
         })
-        .select()
+        .select('*')
         .single();
 
       if (error) throw error;
 
       if (project) {
-        setProjects([{ ...project, posts: [], _count: { posts: 0 } }, ...projects]);
+        const newProject: ProjectWithPosts = {
+          ...project,
+          posts: [],
+          _count: { posts: 0 }
+        };
+        setProjects([newProject, ...projects]);
         setShowCreateModal(false);
         setNewProjectName('');
         setNewProjectDesc('');
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create project');
+      console.error('Failed to create project:', err);
     } finally {
       setCreating(false);
     }

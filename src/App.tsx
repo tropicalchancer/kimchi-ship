@@ -6,8 +6,9 @@ import { supabase } from './lib/supabase'
 import ShipFeed from './components/ShipFeed'
 import UserProfile from './components/UserProfile'
 import Auth from './components/Auth'
-import { Database } from './lib/database.types'
 import ProjectsPage from './pages/ProjectsPage.tsx'
+import Navigation from '@/components/Navigation';
+import { Database } from './lib/database.types'
 
 type Profile = Database['public']['Tables']['users']['Row']
 
@@ -75,25 +76,23 @@ function App() {
         {!session ? (
           <Auth />
         ) : (
-          <Routes>
-            <Route 
-              path="/" 
-              element={<ShipFeed key={user?.id} user={user} />} 
-            />
-            <Route 
-              path="/profile/:userId" 
-              element={
-                <UserProfile currentUser={user} />
-              } 
-            />
-            <Route 
-              path="/projects" 
-              element={
-                <ProjectsPage userId={user?.id || ''} />
-              } 
-            />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+          <Navigation userId={session.user.id}>
+            <Routes>
+              <Route 
+                path="/" 
+                element={<ShipFeed key={user?.id} user={user} />} 
+              />
+              <Route 
+                path="/profile/:userId" 
+                element={<UserProfile currentUser={user} />} 
+              />
+              <Route 
+                path="/projects" 
+                element={<ProjectsPage userId={user?.id || ''} />} 
+              />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Navigation>
         )}
       </div>
     </BrowserRouter>
