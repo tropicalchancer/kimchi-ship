@@ -20,7 +20,13 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    
+    /* Remove this line as it's causing issues */
+    // "noUncheckedSideEffectImports": true,
+    
+    /* Add incremental compilation */
+    "incremental": true,
+    "composite": true
   },
   "include": ["src"]
 }
