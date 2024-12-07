@@ -6,8 +6,8 @@ import { supabase } from './lib/supabase'
 import ShipFeed from './components/ShipFeed'
 import UserProfile from './components/UserProfile'
 import Auth from './components/Auth'
-import ProjectsPage from './pages/ProjectsPage.tsx'
-import Navigation from '@/components/Navigation';
+import Projects from './components/Projects' // Add this import
+import Navigation from '@/components/Navigation'
 import { Database } from './lib/database.types'
 
 type Profile = Database['public']['Tables']['users']['Row']
@@ -88,7 +88,7 @@ function App() {
               />
               <Route 
                 path="/projects" 
-                element={<ProjectsPage userId={user?.id || ''} />} 
+                element={<Projects user={user} />} // Updated this line
               />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

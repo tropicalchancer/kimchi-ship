@@ -7,6 +7,7 @@ import { Database } from '../lib/database.types';
 type Tables = Database['public']['Tables'];
 type Project = Tables['projects']['Row'];
 type Post = Tables['posts']['Row'];
+type User = Tables['users']['Row'];
 
 // Define what Supabase returns with nested posts
 type ProjectWithNestedPosts = Project & {
@@ -20,7 +21,11 @@ interface ProjectWithPosts extends ProjectWithNestedPosts {
   };
 }
 
-const Projects = () => {
+interface ProjectsProps {
+  user: User | null;
+}
+
+const Projects = ({ user }: ProjectsProps) => {
   const [projects, setProjects] = useState<ProjectWithPosts[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -63,20 +68,17 @@ const Projects = () => {
 
   const handleCreateProject = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newProjectName.trim()) return;
+    if (!newProjectName.trim() || !user) return;
 
     try {
       setCreating(true);
       
-      const { data: userData, error: userError } = await supabase.auth.getUser();
-      if (userError) throw userError;
-
       const { data: project, error } = await supabase
         .from('projects')
         .insert({
           name: newProjectName.trim(),
           description: newProjectDesc.trim() || null,
-          user_id: userData.user.id,
+          user_id: user.id,
           created_at: new Date().toISOString()
         })
         .select('*')
