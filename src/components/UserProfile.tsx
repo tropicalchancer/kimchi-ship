@@ -1,9 +1,12 @@
+// src/components/UserProfile.tsx
+
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { User as UserIcon, Flame, Calendar } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Database } from '../lib/database.types';
 
+// Type definitions
 type DbUser = Database['public']['Tables']['users']['Row'];
 type DbPost = Database['public']['Tables']['posts']['Row'];
 
@@ -11,8 +14,20 @@ interface PostWithUser extends DbPost {
   users: DbUser;
 }
 
-const UserProfile = () => {
-  const { userId } = useParams();
+interface UserProfileProps {
+  currentUser: DbUser | null; // Accept the currentUser prop
+}
+
+// Define the exact parameter type expected from the URL
+type ProfileParams = {
+  userId?: string; // Make it optional since useParams can return undefined
+};
+
+const UserProfile: React.FC<UserProfileProps> = ({ currentUser }) => {
+  // Use the correct type for params
+  const params = useParams<ProfileParams>();
+  const userId = params.userId || currentUser?.id || ''; // Use currentUser ID if no userId in URL
+
   const [profile, setProfile] = useState<DbUser | null>(null);
   const [posts, setPosts] = useState<PostWithUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -20,10 +35,15 @@ const UserProfile = () => {
 
   useEffect(() => {
     const fetchProfile = async () => {
+      if (!userId) {
+        setError('User ID is required');
+        setIsLoading(false);
+        return;
+      }
+
       try {
         setIsLoading(true);
-        
-        // Fetch user profile
+
         const { data: userData, error: userError } = await supabase
           .from('users')
           .select('*')
@@ -31,8 +51,8 @@ const UserProfile = () => {
           .single();
 
         if (userError) throw userError;
-        
-        // Fetch user's posts
+        if (!userData) throw new Error('User not found');
+
         const { data: postsData, error: postsError } = await supabase
           .from('posts')
           .select(`
@@ -45,7 +65,7 @@ const UserProfile = () => {
         if (postsError) throw postsError;
 
         setProfile(userData);
-        setPosts(postsData as PostWithUser[]);
+        setPosts((postsData as PostWithUser[]) || []);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load profile');
       } finally {
@@ -55,6 +75,17 @@ const UserProfile = () => {
 
     fetchProfile();
   }, [userId]);
+
+  // Safe date formatting function that handles null/undefined
+  const formatDate = (dateString: string | null): string => {
+    if (!dateString) return 'Unknown date';
+    return new Date(dateString).toLocaleDateString();
+  };
+
+  const formatDateTime = (dateString: string | null): string => {
+    if (!dateString) return 'Unknown date';
+    return new Date(dateString).toLocaleString();
+  };
 
   if (isLoading) {
     return (
@@ -83,7 +114,7 @@ const UserProfile = () => {
             {profile.avatar_url ? (
               <img 
                 src={profile.avatar_url} 
-                alt={profile.full_name} 
+                alt={profile.full_name || 'User avatar'} 
                 className="h-16 w-16 rounded-full object-cover"
               />
             ) : (
@@ -91,17 +122,17 @@ const UserProfile = () => {
             )}
           </div>
           <div className="flex-1">
-            <h1 className="text-2xl font-bold">{profile.full_name}</h1>
+            <h1 className="text-2xl font-bold">{profile.full_name || 'Anonymous User'}</h1>
             <div className="flex items-center gap-2 mt-2 text-gray-600">
               <Flame className="h-4 w-4" />
-              <span>{profile.current_streak} day streak</span>
+              <span>{profile.current_streak || 0} day streak</span>
               <span className="text-sm">
-                (Longest: {profile.longest_streak})
+                (Longest: {profile.longest_streak || 0})
               </span>
             </div>
             <div className="flex items-center gap-2 mt-2 text-sm text-gray-600">
               <Calendar className="h-4 w-4" />
-              <span>Joined {new Date(profile.created_at).toLocaleDateString()}</span>
+              <span>Joined {formatDate(profile.created_at)}</span>
             </div>
           </div>
         </div>
@@ -118,7 +149,7 @@ const UserProfile = () => {
               <div key={post.id} className="border-b last:border-0 pb-4 last:pb-0">
                 <p className="mb-2">{post.content}</p>
                 <div className="text-sm text-gray-500">
-                  {new Date(post.created_at).toLocaleString()}
+                  {formatDateTime(post.created_at)}
                 </div>
               </div>
             ))

@@ -110,6 +110,17 @@ export type Database = {
           name: string
           updated_at: string | null
           user_id: string
+          hashtag: string | null
+          slug: string | null
+          pitch: string | null
+          website: string | null
+          emoji: string | null
+          logo_url: string | null
+          header_url: string | null
+          is_private: boolean
+          topics: string[]
+          makers: string[] // Add this if `makers` is part of your schema
+          status: 'active' | 'completed' | 'archived' // Include this for `status`
         }
         Insert: {
           created_at?: string | null
@@ -118,6 +129,17 @@ export type Database = {
           name: string
           updated_at?: string | null
           user_id: string
+          hashtag?: string | null
+          slug?: string | null
+          pitch?: string | null
+          website?: string | null
+          emoji?: string | null
+          logo_url?: string | null
+          header_url?: string | null
+          is_private?: boolean
+          topics?: string[]
+          makers?: string[] // Optional makers field
+          status?: 'active' | 'completed' | 'archived' // Optional for inserts
         }
         Update: {
           created_at?: string | null
@@ -126,6 +148,17 @@ export type Database = {
           name?: string
           updated_at?: string | null
           user_id?: string
+          hashtag?: string | null
+          slug?: string | null
+          pitch?: string | null
+          website?: string | null
+          emoji?: string | null
+          logo_url?: string | null
+          header_url?: string | null
+          is_private?: boolean
+          topics?: string[]
+          makers?: string[] // Optional makers field
+          status?: 'active' | 'completed' | 'archived' // Optional for updates
         }
         Relationships: [
           {
@@ -136,7 +169,7 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
+      }      
       streak_history: {
         Row: {
           created_at: string | null

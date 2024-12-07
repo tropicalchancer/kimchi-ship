@@ -7,6 +7,7 @@ import ShipFeed from './components/ShipFeed'
 import UserProfile from './components/UserProfile'
 import Auth from './components/Auth'
 import { Database } from './lib/database.types'
+import ProjectsPage from './pages/ProjectsPage.tsx'
 
 type Profile = Database['public']['Tables']['users']['Row']
 
@@ -15,7 +16,6 @@ function App() {
   const [user, setUser] = useState<Profile | null>(null)
 
   useEffect(() => {
-    // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
       if (session?.user) {
@@ -23,7 +23,6 @@ function App() {
       }
     })
 
-    // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -37,7 +36,6 @@ function App() {
   }, [])
 
   const createOrGetUser = async (authUser: User) => {
-    // First try to get existing user
     const { data: existingUser } = await supabase
       .from('users')
       .select('*')
@@ -49,7 +47,6 @@ function App() {
       return
     }
 
-    // If no existing user, create one
     const { data: newUser, error } = await supabase
       .from('users')
       .insert({
@@ -79,10 +76,21 @@ function App() {
           <Auth />
         ) : (
           <Routes>
-            <Route path="/" element={<ShipFeed key={user?.id} user={user} />} />
+            <Route 
+              path="/" 
+              element={<ShipFeed key={user?.id} user={user} />} 
+            />
             <Route 
               path="/profile/:userId" 
-              element={<UserProfile currentUser={session.user} />} 
+              element={
+                <UserProfile currentUser={user} />
+              } 
+            />
+            <Route 
+              path="/projects" 
+              element={
+                <ProjectsPage userId={user?.id || ''} />
+              } 
             />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
