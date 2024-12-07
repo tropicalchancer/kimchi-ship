@@ -3,13 +3,14 @@ import { Link as LinkIcon, LogOut } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Database } from '../lib/database.types';
+import HashtagAutoComplete from './HashtagAutoComplete';
 
 type Props = {
   user: Database['public']['Tables']['users']['Row'] | null;
-}
+};
 
-type DbPost = Database['public']['Tables']['posts']['Row']
-type DbUser = Database['public']['Tables']['users']['Row']
+type DbPost = Database['public']['Tables']['posts']['Row'];
+type DbUser = Database['public']['Tables']['users']['Row'];
 
 interface PostWithUser extends DbPost {
   users: DbUser;
@@ -20,6 +21,7 @@ const ShipFeed = ({ user }: Props) => {
   const [newPost, setNewPost] = useState('');
   const [loading, setLoading] = useState(true);
   const [signingOut, setSigningOut] = useState(false);
+  const [linkedProjectId, setLinkedProjectId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchPosts();
@@ -75,6 +77,7 @@ const ShipFeed = ({ user }: Props) => {
       const postData = {
         content: newPost,
         user_id: user.id,
+        project_id: linkedProjectId,
       };
 
       const { data: post, error } = await supabase
@@ -102,20 +105,21 @@ const ShipFeed = ({ user }: Props) => {
       if (post) {
         setPosts([post as PostWithUser, ...posts]);
         setNewPost('');
+        setLinkedProjectId(null);
       }
     } catch (error) {
       console.error('Error creating post:', error);
     }
   };
 
-  if (loading) {
-    return <div className="max-w-2xl mx-auto p-4">Loading...</div>;
-  }
-
   const formatDate = (dateString: string | null) => {
     if (!dateString) return '';
     return new Date(dateString).toLocaleDateString();
   };
+
+  if (loading) {
+    return <div className="max-w-2xl mx-auto p-4">Loading...</div>;
+  }
 
   return (
     <div className="max-w-2xl mx-auto p-4">
@@ -151,15 +155,15 @@ const ShipFeed = ({ user }: Props) => {
         <div className="mb-8 bg-white rounded-lg p-4 shadow-sm border">
           <h2 className="text-gray-600 mb-2">What did you ship?</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="flex gap-2">
-              <textarea
-                value={newPost}
-                onChange={(e) => setNewPost(e.target.value)}
-                className="flex-1 p-2 border rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                rows={3}
-                placeholder="Share what you shipped today..."
-              />
-            </div>
+            <HashtagAutoComplete
+              value={newPost}
+              onChange={(value: string) => {
+                setNewPost(value);
+              }}
+              onProjectLink={(projectId: string | null) => {
+                setLinkedProjectId(projectId);
+              }}
+            />
             <div className="flex justify-between items-center">
               <button 
                 type="button" 

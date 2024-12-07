@@ -1,7 +1,7 @@
 import React from 'react'
-import { Archive, Globe } from 'lucide-react' // Removed ExternalLink since we're using Globe
+import { Archive, Globe } from 'lucide-react'
+import { formatDistanceToNow, parseISO } from 'date-fns'
 
-// Type definition for a project
 interface Project {
   id: string
   name: string
@@ -17,7 +17,7 @@ interface Project {
   topics: string[]
   user_id: string
   status: 'active' | 'completed' | 'archived'
-  created_at: string | null // Updated to allow null values
+  created_at: string | null
 }
 
 interface ProjectCardProps {
@@ -31,9 +31,12 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
   isOwner,
   onArchive
 }) => {
-  const formattedDate = project.created_at
-    ? new Date(project.created_at).toLocaleDateString()
-    : 'Unknown Date' // Fallback for null created_at
+  const timeAgo = project.created_at
+    ? formatDistanceToNow(parseISO(project.created_at), { addSuffix: true }) // Handles ISO dates
+    : 'Unknown time'
+
+  console.log('Time ago:', timeAgo) // Debug output
+  console.log('Created At:', project.created_at) // Debug output
 
   return (
     <div className="bg-white rounded-lg p-4 shadow-sm border">
@@ -71,7 +74,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
       </div>
 
       <div className="mt-2 text-sm text-gray-500">
-        Created {formattedDate}
+        {timeAgo}
       </div>
     </div>
   )
