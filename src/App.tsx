@@ -1,4 +1,3 @@
-// src/App.tsx
 import { useEffect, useState } from 'react'
 import { Session, User } from '@supabase/supabase-js'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
@@ -6,8 +5,9 @@ import { supabase } from './lib/supabase'
 import ShipFeed from './components/ShipFeed'
 import UserProfile from './components/UserProfile'
 import Auth from './components/Auth'
-import Projects from './components/Projects' // Add this import
-import Navigation from '@/components/Navigation'
+import Projects from './components/Projects'
+import ProjectDetails from './components/ProjectDetails'
+import Navigation from './components/Navigation'
 import { Database } from './lib/database.types'
 
 type Profile = Database['public']['Tables']['users']['Row']
@@ -77,21 +77,25 @@ function App() {
           <Auth />
         ) : (
           <Navigation userId={session.user.id}>
-            <Routes>
-              <Route 
-                path="/" 
-                element={<ShipFeed key={user?.id} user={user} />} 
-              />
-              <Route 
-                path="/profile/:userId" 
-                element={<UserProfile currentUser={user} />} 
-              />
-              <Route 
-                path="/projects" 
-                element={<Projects user={user} />} // Updated this line
-              />
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
+        <Routes>
+  <Route 
+    path="/" 
+    element={<ShipFeed key={user?.id} user={user} />} 
+  />
+  <Route 
+    path="/profile/:userId" 
+    element={<UserProfile currentUser={user} />} 
+  />
+  <Route 
+    path="/projects" 
+    element={<Projects user={user} />} 
+  />
+  <Route 
+    path="/projects/:projectId" 
+    element={<ProjectDetails user={user} />} 
+  />
+  <Route path="*" element={<Navigate to="/" replace />} />
+</Routes>
           </Navigation>
         )}
       </div>
