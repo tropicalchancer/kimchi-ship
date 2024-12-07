@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'lucide-react';
+import { Link, LogOut } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Database } from '../lib/database.types';
 
@@ -18,6 +18,7 @@ const ShipFeed = ({ user }: Props) => {
   const [posts, setPosts] = useState<PostWithUser[]>([]);
   const [newPost, setNewPost] = useState('');
   const [loading, setLoading] = useState(true);
+  const [signingOut, setSigningOut] = useState(false);
 
   useEffect(() => {
     fetchPosts();
@@ -50,6 +51,18 @@ const ShipFeed = ({ user }: Props) => {
       console.error('Error fetching posts:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      setSigningOut(true);
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error signing out:', error);
+    } finally {
+      setSigningOut(false);
     }
   };
 
@@ -107,13 +120,27 @@ const ShipFeed = ({ user }: Props) => {
     <div className="max-w-2xl mx-auto p-4">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Kimchi Ship</h1>
-        <p className="text-gray-600">Share what you shipped today</p>
-        {user && (
-          <p className="text-sm text-gray-500 mt-2">
-            Current streak: {user.current_streak ?? 0} 🌶️
-          </p>
-        )}
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">Kimchi Ship</h1>
+            <p className="text-gray-600">Share what you shipped today</p>
+            {user && (
+              <p className="text-sm text-gray-500 mt-2">
+                Current streak: {user.current_streak ?? 0} 🌶️
+              </p>
+            )}
+          </div>
+          {user && (
+            <button
+              onClick={handleSignOut}
+              disabled={signingOut}
+              className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 p-2 rounded-full transition-colors"
+              aria-label="Sign out"
+            >
+              <LogOut className="w-5 h-5" />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Post Form */}
