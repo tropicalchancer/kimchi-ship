@@ -6,20 +6,14 @@ import { Database } from '../lib/database.types';
 import HashtagAutoComplete from './HashtagAutoComplete';
 import FileUpload from './FileUpload';
 import TimeAgo from './TimeAgo';
+import { PostWithUserAndProject } from '../types/project';
 
 type Props = {
   user: Database['public']['Tables']['users']['Row'] | null;
 };
 
-type DbPost = Database['public']['Tables']['posts']['Row'];
-type DbUser = Database['public']['Tables']['users']['Row'];
-
-interface PostWithUser extends DbPost {
-  users: DbUser;
-}
-
 const ShipFeed = ({ user }: Props) => {
-  const [posts, setPosts] = useState<PostWithUser[]>([]);
+  const [posts, setPosts] = useState<PostWithUserAndProject[]>([]);
   const [newPost, setNewPost] = useState('');
   const [loading, setLoading] = useState(true);
   const [signingOut, setSigningOut] = useState(false);
@@ -40,6 +34,7 @@ const ShipFeed = ({ user }: Props) => {
           id,
           content,
           created_at,
+          updated_at,
           image_url,
           project_id,
           user_id,
@@ -49,12 +44,17 @@ const ShipFeed = ({ user }: Props) => {
             avatar_url,
             current_streak,
             email
+          ),
+          projects (
+            id,
+            name,
+            description
           )
         `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setPosts((data as PostWithUser[]) || []);
+      setPosts(data || []);
     } catch (error) {
       console.error('Error fetching posts:', error);
     } finally {
@@ -82,9 +82,6 @@ const ShipFeed = ({ user }: Props) => {
       const { data: sessionData } = await supabase.auth.getSession();
       const authUserId = sessionData?.session?.user.id;
 
-      console.log('Authenticated user ID:', authUserId);
-      console.log('Frontend user ID:', user?.id);
-
       if (authUserId !== user?.id) {
         throw new Error('Authenticated user ID does not match frontend user ID');
       }
@@ -103,6 +100,7 @@ const ShipFeed = ({ user }: Props) => {
           id,
           content,
           created_at,
+          updated_at,
           image_url,
           project_id,
           user_id,
@@ -112,14 +110,19 @@ const ShipFeed = ({ user }: Props) => {
             avatar_url,
             current_streak,
             email
+          ),
+          projects (
+            id,
+            name,
+            description
           )
         `)
         .single();
-
+    
       if (error) throw error;
 
       if (post) {
-        setPosts([post as PostWithUser, ...posts]);
+        setPosts([post, ...posts]);
         setNewPost('');
         setLinkedProjectId(null);
         setImageUrl(null);
@@ -212,9 +215,7 @@ const ShipFeed = ({ user }: Props) => {
       {/* Header */}
       <div className="mb-8">
         <div className="flex justify-between items-start">
-          <div>
-
-          </div>
+          <div></div>
           {user && (
             <button
               onClick={handleSignOut}
@@ -231,7 +232,6 @@ const ShipFeed = ({ user }: Props) => {
       {/* Post Form */}
       {user ? (
         <div className="mb-8 bg-white rounded-lg p-4 shadow-sm border">
-      
           <form onSubmit={handleSubmit} className="space-y-4">
             <div
               onDragEnter={handleDragIn}
@@ -330,7 +330,20 @@ const ShipFeed = ({ user }: Props) => {
                     </span>
                   )}
                 </div>
-                <div className="font-medium">{post.content}</div>
+                <div className="font-medium">
+                  {post.content}
+                  {post.project_id && post.projects && (
+                    <>
+                      {' '}
+                      <Link 
+                        to={`/projects/${post.project_id}`}
+                        className="text-blue-600 hover:underline"
+                      >
+                        #{post.projects.name}
+                      </Link>
+                    </>
+                  )}
+                </div>
                 {post.image_url && (
                   <img
                     src={post.image_url}
