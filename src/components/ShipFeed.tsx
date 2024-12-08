@@ -179,25 +179,19 @@ const ShipFeed = ({ user }: Props) => {
                 setLinkedProjectId(projectId);
               }}
             />
-            <div className="flex justify-between items-center">
-              <button 
-                type="button" 
-                className="text-gray-500 hover:text-gray-700 transition-colors"
-              >
-                <LinkIcon size={20} />
-              </button>
-              <FileUpload 
-                user={user}
-                onUploadComplete={(url) => setImageUrl(url)}
-                onError={(error) => console.error('Upload error:', error)}
-              />
-              <button
-                type="submit"
-                className="bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-600 transition-colors"
-              >
-                Post
-              </button>
-            </div>
+          <div className="flex justify-between items-center">
+            <FileUpload 
+              user={user}
+              onUploadComplete={(url) => setImageUrl(url)}
+              onError={(error) => console.error('Upload error:', error)}
+            />
+            <button
+              type="submit"
+              className="bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-600 transition-colors"
+            >
+              Post
+            </button>
+          </div>
           </form>
         </div>
       ) : (
