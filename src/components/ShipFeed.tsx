@@ -26,6 +26,7 @@ const ShipFeed = ({ user }: Props) => {
   const [linkedProjectId, setLinkedProjectId] = useState<string | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [dragCounter, setDragCounter] = useState(0);
 
   useEffect(() => {
     fetchPosts();
@@ -136,20 +137,28 @@ const ShipFeed = ({ user }: Props) => {
   const handleDragIn = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
-      setIsDragging(true);
+    setDragCounter(prev => prev + 1);
+    const items = e.dataTransfer.items;
+    if (items && items.length > 0) {
+      if (items[0].kind === 'file') {
+        setIsDragging(true);
+      }
     }
   };
 
   const handleDragOut = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsDragging(false);
+    setDragCounter(prev => prev - 1);
+    if (dragCounter - 1 === 0) {
+      setIsDragging(false);
+    }
   };
 
   const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
+    setDragCounter(0);
     setIsDragging(false);
 
     if (!user) return;
@@ -204,15 +213,7 @@ const ShipFeed = ({ user }: Props) => {
       <div className="mb-8">
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Kimchi Ship</h1>
-            <p className="text-gray-600">Share what you shipped today</p>
-            {user && (
-              <p className="text-sm text-gray-500 mt-2">
-                <Link to={`/profile/${user.id}`} className="hover:text-gray-700">
-                  Current streak: {user.current_streak ?? 0} 🌶️
-                </Link>
-              </p>
-            )}
+
           </div>
           {user && (
             <button
@@ -230,15 +231,16 @@ const ShipFeed = ({ user }: Props) => {
       {/* Post Form */}
       {user ? (
         <div className="mb-8 bg-white rounded-lg p-4 shadow-sm border">
-          <h2 className="text-gray-600 mb-2">What did you ship?</h2>
+      
           <form onSubmit={handleSubmit} className="space-y-4">
             <div
               onDragEnter={handleDragIn}
               onDragLeave={handleDragOut}
               onDragOver={handleDrag}
               onDrop={handleDrop}
+              onClick={e => e.stopPropagation()}
               className={`
-                relative rounded-lg transition-all duration-200
+                relative rounded-lg transition-all duration-300
                 ${isDragging ? 'bg-blue-50 border-2 border-dashed border-blue-300' : ''}
               `}
             >
@@ -252,7 +254,9 @@ const ShipFeed = ({ user }: Props) => {
                 }}
               />
               {isDragging && (
-                <div className="absolute inset-0 flex items-center justify-center bg-blue-50 bg-opacity-90 rounded-lg">
+                <div 
+                  className="absolute inset-0 flex items-center justify-center bg-blue-50 bg-opacity-90 rounded-lg pointer-events-none"
+                >
                   <p className="text-blue-500">Drop image here</p>
                 </div>
               )}
