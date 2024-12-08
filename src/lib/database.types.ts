@@ -119,8 +119,8 @@ export type Database = {
           header_url: string | null
           is_private: boolean
           topics: string[]
-          makers: string[] // Add this if `makers` is part of your schema
-          status: 'active' | 'completed' | 'archived' // Include this for `status`
+          makers: string[]
+          status: 'active' | 'completed' | 'archived'
         }
         Insert: {
           created_at?: string | null
@@ -138,8 +138,8 @@ export type Database = {
           header_url?: string | null
           is_private?: boolean
           topics?: string[]
-          makers?: string[] // Optional makers field
-          status?: 'active' | 'completed' | 'archived' // Optional for inserts
+          makers?: string[]
+          status?: 'active' | 'completed' | 'archived'
         }
         Update: {
           created_at?: string | null
@@ -157,8 +157,8 @@ export type Database = {
           header_url?: string | null
           is_private?: boolean
           topics?: string[]
-          makers?: string[] // Optional makers field
-          status?: 'active' | 'completed' | 'archived' // Optional for updates
+          makers?: string[]
+          status?: 'active' | 'completed' | 'archived'
         }
         Relationships: [
           {
@@ -353,3 +353,31 @@ export type CompositeTypes<
   : PublicCompositeTypeNameOrOptions extends keyof PublicSchema["CompositeTypes"]
     ? PublicSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
+
+// Base types
+export type DbPost = Database['public']['Tables']['posts']['Row']
+export type DbUser = Database['public']['Tables']['users']['Row']
+export type DbProject = Database['public']['Tables']['projects']['Row']
+
+// Composite types for relationships
+export interface PostWithUser extends Omit<DbPost, 'users'> {
+  users: Pick<DbUser, 'id' | 'full_name' | 'avatar_url' | 'current_streak' | 'email'>;
+}
+
+export interface PostWithUserAndProject extends PostWithUser {
+  projects?: Pick<DbProject, 'id' | 'name' | 'description' | 'user_id'> | null;
+}
+
+// Type guard
+export function isDbUser(user: unknown): user is DbUser {
+  return (
+    typeof user === 'object' &&
+    user !== null &&
+    'id' in user &&
+    'email' in user &&
+    'full_name' in user &&
+    typeof (user as DbUser).id === 'string' &&
+    typeof (user as DbUser).email === 'string' &&
+    typeof (user as DbUser).full_name === 'string'
+  );
+}

@@ -6,10 +6,19 @@ import { Database } from '../lib/database.types';
 import HashtagAutoComplete from './HashtagAutoComplete';
 import FileUpload from './FileUpload';
 import TimeAgo from './TimeAgo';
-import { PostWithUserAndProject } from '../types/project';
+
+type Tables = Database['public']['Tables'];
+type DbUser = Tables['users']['Row'];
+type DbPost = Tables['posts']['Row'];
+type DbProject = Tables['projects']['Row'];
+
+interface PostWithUserAndProject extends DbPost {
+  users: DbUser;
+  projects?: DbProject | null;
+}
 
 type Props = {
-  user: Database['public']['Tables']['users']['Row'] | null;
+  user: DbUser | null;
 };
 
 const ShipFeed = ({ user }: Props) => {
@@ -122,7 +131,7 @@ const ShipFeed = ({ user }: Props) => {
       if (error) throw error;
 
       if (post) {
-        setPosts([post, ...posts]);
+        setPosts([post as PostWithUserAndProject, ...posts]);
         setNewPost('');
         setLinkedProjectId(null);
         setImageUrl(null);
