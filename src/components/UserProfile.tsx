@@ -1,10 +1,9 @@
-// src/components/UserProfile.tsx
-
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { User as UserIcon, Flame, Calendar } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Database } from '../lib/database.types';
+import TimeAgo from './TimeAgo';
 
 // Type definitions
 type DbUser = Database['public']['Tables']['users']['Row'];
@@ -15,18 +14,16 @@ interface PostWithUser extends DbPost {
 }
 
 interface UserProfileProps {
-  currentUser: DbUser | null; // Accept the currentUser prop
+  currentUser: DbUser | null;
 }
 
-// Define the exact parameter type expected from the URL
 type ProfileParams = {
-  userId?: string; // Make it optional since useParams can return undefined
+  userId?: string;
 };
 
 const UserProfile: React.FC<UserProfileProps> = ({ currentUser }) => {
-  // Use the correct type for params
   const params = useParams<ProfileParams>();
-  const userId = params.userId || currentUser?.id || ''; // Use currentUser ID if no userId in URL
+  const userId = params.userId || currentUser?.id || '';
 
   const [profile, setProfile] = useState<DbUser | null>(null);
   const [posts, setPosts] = useState<PostWithUser[]>([]);
@@ -76,17 +73,6 @@ const UserProfile: React.FC<UserProfileProps> = ({ currentUser }) => {
     fetchProfile();
   }, [userId]);
 
-  // Safe date formatting function that handles null/undefined
-  const formatDate = (dateString: string | null): string => {
-    if (!dateString) return 'Unknown date';
-    return new Date(dateString).toLocaleDateString();
-  };
-
-  const formatDateTime = (dateString: string | null): string => {
-    if (!dateString) return 'Unknown date';
-    return new Date(dateString).toLocaleString();
-  };
-
   if (isLoading) {
     return (
       <div className="max-w-2xl mx-auto p-4">
@@ -132,7 +118,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ currentUser }) => {
             </div>
             <div className="flex items-center gap-2 mt-2 text-sm text-gray-600">
               <Calendar className="h-4 w-4" />
-              <span>Joined {formatDate(profile.created_at)}</span>
+              <span>Joined <TimeAgo date={profile.created_at} /></span>
             </div>
           </div>
         </div>
@@ -148,9 +134,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ currentUser }) => {
             posts.map((post) => (
               <div key={post.id} className="border-b last:border-0 pb-4 last:pb-0">
                 <p className="mb-2">{post.content}</p>
-                <div className="text-sm text-gray-500">
-                  {formatDateTime(post.created_at)}
-                </div>
+                <TimeAgo date={post.created_at} />
               </div>
             ))
           )}

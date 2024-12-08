@@ -1,13 +1,18 @@
 import { useEffect, useState } from 'react';
 
-const TimeAgo = ({ date }) => {
+interface TimeAgoProps {
+  date: string | Date;
+}
+
+const TimeAgo = ({ date }: TimeAgoProps) => {
   const [timeAgo, setTimeAgo] = useState('');
 
   useEffect(() => {
     const updateTimeAgo = () => {
       const now = new Date();
       const past = new Date(date);
-      const diffInSeconds = Math.floor((now - past) / 1000);
+      const diffInMilliseconds = now.getTime() - past.getTime();
+      const diffInSeconds = Math.floor(diffInMilliseconds / 1000);
 
       if (diffInSeconds < 60) {
         setTimeAgo(`${diffInSeconds} seconds ago`);

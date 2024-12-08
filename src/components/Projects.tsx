@@ -3,6 +3,7 @@ import { Plus, Loader2, Package } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Database } from '../lib/database.types';
+import TimeAgo from './TimeAgo';
 
 type Tables = Database['public']['Tables'];
 type Project = Tables['projects']['Row'];
@@ -220,7 +221,7 @@ const Projects: React.FC<ProjectsProps> = ({ user }) => {
                       </div>
                       <div className="mt-1">{post.content}</div>
                       <div className="text-sm text-gray-500 mt-1">
-                        {formatDate(post.created_at)}
+                        <TimeAgo date={post.created_at} />
                       </div>
                     </div>
                   </div>

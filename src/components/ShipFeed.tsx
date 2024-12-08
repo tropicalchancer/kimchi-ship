@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase';
 import { Database } from '../lib/database.types';
 import HashtagAutoComplete from './HashtagAutoComplete';
 import FileUpload from './FileUpload';
+import TimeAgo from './TimeAgo';
 
 type Props = {
   user: Database['public']['Tables']['users']['Row'] | null;
@@ -247,7 +248,7 @@ const ShipFeed = ({ user }: Props) => {
                   />
                 )}
                 <div className="text-gray-500 text-sm mt-1">
-                  {formatDate(post.created_at)}
+                  <TimeAgo date={post.created_at} />
                 </div>
               </div>
             </div>
