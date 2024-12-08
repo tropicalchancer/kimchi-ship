@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link as LinkIcon, LogOut } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Database } from '../lib/database.types';
