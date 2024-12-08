@@ -1,4 +1,3 @@
-// FileUpload.tsx
 import { useState } from 'react';
 import { Upload, AlertCircle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
@@ -15,31 +14,27 @@ interface FileUploadProps {
 const FileUpload = ({ user, onUploadComplete, onError }: FileUploadProps) => {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (file: File) => {
     try {
-      const file = event.target.files?.[0];
       if (!file) return;
       
-      // Reset states
       setUploading(true);
       setError(null);
 
-      // Validate file type and size
       if (!file.type.startsWith('image/')) {
         throw new Error('Please upload an image file');
       }
       
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      if (file.size > 5 * 1024 * 1024) {
         throw new Error('File size must be less than 5MB');
       }
 
-      // Create a unique file path
       const fileExt = file.name.split('.').pop();
       const fileName = `${Math.random().toString(36).substring(2)}${Date.now()}.${fileExt}`;
       const filePath = `${user.id}/${fileName}`;
 
-      // Upload file to Supabase Storage
       const { error: uploadError } = await supabase.storage
         .from('uploads')
         .upload(filePath, file, {
@@ -51,7 +46,6 @@ const FileUpload = ({ user, onUploadComplete, onError }: FileUploadProps) => {
         throw new Error('Error uploading file: ' + uploadError.message);
       }
 
-      // Get public URL
       const { data: urlData } = supabase.storage
         .from('uploads')
         .getPublicUrl(filePath);
@@ -60,7 +54,6 @@ const FileUpload = ({ user, onUploadComplete, onError }: FileUploadProps) => {
         throw new Error('Error getting public URL');
       }
 
-      // Notify parent component
       onUploadComplete(urlData.publicUrl);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An error occurred during upload';
@@ -68,33 +61,91 @@ const FileUpload = ({ user, onUploadComplete, onError }: FileUploadProps) => {
       onError(errorMessage);
     } finally {
       setUploading(false);
+      setIsDragging(false);
+    }
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      handleFileUpload(file);
+    }
+  };
+
+  // Updated drag handlers to prevent default behavior
+  const handleDrag = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDragIn = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
+      setIsDragging(true);
+    }
+  };
+
+  const handleDragOut = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const file = e.dataTransfer.files[0];
+      handleFileUpload(file);
+      e.dataTransfer.clearData();
     }
   };
 
   return (
     <div className="relative">
-      <label 
+      <div
+        onDragEnter={handleDragIn}
+        onDragLeave={handleDragOut}
+        onDragOver={handleDrag}
+        onDrop={handleDrop}
         className={`
-          flex items-center gap-2 px-4 py-2 rounded-full 
-          ${uploading 
-            ? 'bg-gray-100 cursor-not-allowed' 
-            : 'bg-blue-50 hover:bg-blue-100 cursor-pointer'
-          }
-          transition-colors
+          rounded-lg transition-all duration-200
+          ${isDragging ? 'bg-blue-50 border-2 border-dashed border-blue-300 p-4' : ''}
         `}
       >
-        <Upload className="w-4 h-4" />
-        <span className="text-sm">
-          {uploading ? 'Uploading...' : 'Add Image'}
-        </span>
-        <input
-          type="file"
-          accept="image/*"
-          onChange={handleFileChange}
-          disabled={uploading}
-          className="hidden"
-        />
-      </label>
+        <label 
+          className={`
+            flex items-center gap-2 px-4 py-2 rounded-full 
+            ${uploading 
+              ? 'bg-gray-100 cursor-not-allowed' 
+              : isDragging
+                ? 'bg-white'
+                : 'bg-blue-50 hover:bg-blue-100 cursor-pointer'
+            }
+            transition-colors
+          `}
+        >
+          <Upload className="w-4 h-4" />
+          <span className="text-sm">
+            {uploading 
+              ? 'Uploading...' 
+              : isDragging
+                ? 'Drop image here'
+                : 'Add Image'
+            }
+          </span>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            disabled={uploading}
+            className="hidden"
+          />
+        </label>
+      </div>
 
       {error && (
         <div className="absolute top-full mt-2 w-full">
