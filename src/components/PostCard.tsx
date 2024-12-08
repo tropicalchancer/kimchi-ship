@@ -18,6 +18,28 @@ interface PostCardProps {
 }
 
 const PostCard = ({ post }: PostCardProps) => {
+  const renderContent = () => {
+    if (!post.project_id || !post.projects) {
+      return post.content;
+    }
+
+    // Remove the project hashtag from content if it exists
+    const projectTag = `#${post.projects.name}`;
+    const cleanContent = post.content.replace(projectTag, '').trim();
+
+    return (
+      <>
+        {cleanContent}{' '}
+        <Link 
+          to={`/projects/${post.project_id}`}
+          className="text-blue-600 hover:underline"
+        >
+          {projectTag}
+        </Link>
+      </>
+    );
+  };
+
   return (
     <div className="bg-white rounded-lg p-4 shadow-sm border">
       <div className="flex gap-3">
@@ -39,18 +61,7 @@ const PostCard = ({ post }: PostCardProps) => {
             )}
           </div>
           <div className="font-medium">
-            {post.content}
-            {post.project_id && post.projects && (
-              <>
-                {' '}
-                <Link 
-                  to={`/projects/${post.project_id}`}
-                  className="text-blue-600 hover:underline"
-                >
-                  #{post.projects.name}
-                </Link>
-              </>
-            )}
+            {renderContent()}
           </div>
           {post.image_url && (
             <img

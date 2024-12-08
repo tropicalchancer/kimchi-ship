@@ -116,35 +116,29 @@ const FileUpload = ({ user, onUploadComplete, onError }: FileUploadProps) => {
           ${isDragging ? 'bg-blue-50 border-2 border-dashed border-blue-300 p-4' : ''}
         `}
       >
-        <label 
-          className={`
-            flex items-center gap-2 px-4 py-2 rounded-full 
-            ${uploading 
-              ? 'bg-gray-100 cursor-not-allowed' 
-              : isDragging
-                ? 'bg-white'
-                : 'bg-blue-50 hover:bg-blue-100 cursor-pointer'
-            }
-            transition-colors
-          `}
-        >
-          <Upload className="w-4 h-4" />
-          <span className="text-sm">
-            {uploading 
-              ? 'Uploading...' 
-              : isDragging
-                ? 'Drop image here'
-                : 'Add Image'
-            }
-          </span>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleFileChange}
-            disabled={uploading}
-            className="hidden"
-          />
-        </label>
+<label 
+  className={`
+    flex items-center justify-center w-10 h-10 rounded-full 
+    ${uploading 
+      ? 'bg-gray-100 cursor-not-allowed' 
+      : isDragging
+        ? 'bg-blue-100'
+        : 'bg-blue-50 hover:bg-blue-100 cursor-pointer'
+    }
+    transition-colors
+  `}
+>
+  <span className="text-xl">🖼️</span>
+  <input
+    type="file"
+    accept="image/*"
+    onChange={handleFileChange}
+    disabled={uploading}
+    className="hidden"
+  />
+</label>
+
+
       </div>
 
       {error && (

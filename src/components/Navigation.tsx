@@ -15,14 +15,14 @@ const Navigation = ({ userId, children }: NavigationProps) => {
       icon: Home
     },
     {
+        name: 'Projects',
+        path: '/projects',
+        icon: Package
+      },
+    {
       name: 'Profile',
       path: `/profile/${userId}`,
       icon: User
-    },
-    {
-      name: 'Projects',
-      path: '/projects',
-      icon: Package
     }
   ];
 
