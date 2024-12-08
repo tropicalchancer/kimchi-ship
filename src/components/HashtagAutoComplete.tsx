@@ -112,7 +112,7 @@ const HashtagAutoComplete = ({ value, onChange, onProjectLink }: Props) => {
         onKeyDown={handleKeyDown}
         onClick={handleClick}
         onFocus={handleClick}
-        className="w-full p-2 border rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        className="w-full p-2 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         rows={3}
         placeholder="Share what you shipped today... Use # to mention a project"
       />
