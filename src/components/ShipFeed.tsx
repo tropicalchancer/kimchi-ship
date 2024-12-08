@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Database } from '../lib/database.types';
 import HashtagAutoComplete from './HashtagAutoComplete';
+import FileUpload from './FileUpload';
 
 type Props = {
   user: Database['public']['Tables']['users']['Row'] | null;
@@ -22,6 +23,7 @@ const ShipFeed = ({ user }: Props) => {
   const [loading, setLoading] = useState(true);
   const [signingOut, setSigningOut] = useState(false);
   const [linkedProjectId, setLinkedProjectId] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
 
   useEffect(() => {
     fetchPosts();
@@ -49,7 +51,7 @@ const ShipFeed = ({ user }: Props) => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setPosts(data as PostWithUser[] || []);
+      setPosts((data as PostWithUser[]) || []);
     } catch (error) {
       console.error('Error fetching posts:', error);
     } finally {
@@ -74,10 +76,21 @@ const ShipFeed = ({ user }: Props) => {
     if (!newPost.trim() || !user) return;
 
     try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const authUserId = sessionData?.session?.user.id;
+
+      console.log('Authenticated user ID:', authUserId);
+      console.log('Frontend user ID:', user?.id);
+
+      if (authUserId !== user?.id) {
+        throw new Error('Authenticated user ID does not match frontend user ID');
+      }
+
       const postData = {
         content: newPost,
-        user_id: user.id,
+        user_id: authUserId,
         project_id: linkedProjectId,
+        image_url: imageUrl,
       };
 
       const { data: post, error } = await supabase
@@ -106,6 +119,7 @@ const ShipFeed = ({ user }: Props) => {
         setPosts([post as PostWithUser, ...posts]);
         setNewPost('');
         setLinkedProjectId(null);
+        setImageUrl(null);
       }
     } catch (error) {
       console.error('Error creating post:', error);
@@ -171,6 +185,11 @@ const ShipFeed = ({ user }: Props) => {
               >
                 <LinkIcon size={20} />
               </button>
+              <FileUpload 
+                user={user}
+                onUploadComplete={(url) => setImageUrl(url)}
+                onError={(error) => console.error('Upload error:', error)}
+              />
               <button
                 type="submit"
                 className="bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-600 transition-colors"
@@ -188,7 +207,7 @@ const ShipFeed = ({ user }: Props) => {
 
       {/* Posts Feed */}
       <div className="space-y-4">
-        {posts.map(post => (
+        {posts.map((post) => (
           <div key={post.id} className="bg-white rounded-lg p-4 shadow-sm border">
             <div className="flex gap-3">
               <Link 
@@ -220,6 +239,13 @@ const ShipFeed = ({ user }: Props) => {
                   )}
                 </div>
                 <div className="font-medium">{post.content}</div>
+                {post.image_url && (
+                  <img
+                    src={post.image_url}
+                    alt="Uploaded content"
+                    className="mt-2 rounded-lg border"
+                  />
+                )}
                 <div className="text-gray-500 text-sm mt-1">
                   {formatDate(post.created_at)}
                 </div>
