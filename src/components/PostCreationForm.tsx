@@ -11,12 +11,12 @@ type DbPost = Tables['posts']['Row'];
 type DbProject = Tables['projects']['Row'];
 
 interface PostWithUserAndProject extends DbPost {
-  users: DbUser;
+  users: DbUser | null; // Allow null
   projects?: DbProject | null;
 }
 
 interface PostCreationFormProps {
-  user: DbUser;
+  user: DbUser | null; // Allow null
   onPostCreated: (post: PostWithUserAndProject) => void;
 }
 
@@ -35,7 +35,7 @@ const PostCreationForm = ({ user, onPostCreated }: PostCreationFormProps) => {
   const handleDragIn = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    setDragCounter(prev => prev + 1);
+    setDragCounter((prev) => prev + 1);
     const items = e.dataTransfer.items;
     if (items && items.length > 0) {
       if (items[0].kind === 'file') {
@@ -47,7 +47,7 @@ const PostCreationForm = ({ user, onPostCreated }: PostCreationFormProps) => {
   const handleDragOut = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    setDragCounter(prev => prev - 1);
+    setDragCounter((prev) => prev - 1);
     if (dragCounter - 1 === 0) {
       setIsDragging(false);
     }
@@ -72,13 +72,13 @@ const PostCreationForm = ({ user, onPostCreated }: PostCreationFormProps) => {
 
       const fileExt = file.name.split('.').pop();
       const fileName = `${Math.random().toString(36).substring(2)}${Date.now()}.${fileExt}`;
-      const filePath = `${user.id}/${fileName}`;
+      const filePath = `${user?.id}/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('uploads')
         .upload(filePath, file, {
           cacheControl: '3600',
-          upsert: false
+          upsert: false,
         });
 
       if (uploadError) {
@@ -112,7 +112,7 @@ const PostCreationForm = ({ user, onPostCreated }: PostCreationFormProps) => {
       }
 
       const postData = {
-        content: newPost,
+        content: `✅ ${newPost}`,
         user_id: authUserId,
         project_id: linkedProjectId,
         image_url: imageUrl,
@@ -147,7 +147,10 @@ const PostCreationForm = ({ user, onPostCreated }: PostCreationFormProps) => {
       if (error) throw error;
 
       if (post) {
-        onPostCreated(post as PostWithUserAndProject);
+        onPostCreated({
+          ...post,
+          users: post.users || null, // Handle missing user
+        } as PostWithUserAndProject);
         setNewPost('');
         setLinkedProjectId(null);
         setImageUrl(null);
@@ -165,7 +168,7 @@ const PostCreationForm = ({ user, onPostCreated }: PostCreationFormProps) => {
           onDragLeave={handleDragOut}
           onDragOver={handleDrag}
           onDrop={handleDrop}
-          onClick={e => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
           className={`
             relative rounded-lg transition-all duration-300
             ${isDragging ? 'bg-blue-50 border-2 border-dashed border-blue-300' : ''}
@@ -181,7 +184,7 @@ const PostCreationForm = ({ user, onPostCreated }: PostCreationFormProps) => {
             }}
           />
           {isDragging && (
-            <div 
+            <div
               className="absolute inset-0 flex items-center justify-center bg-blue-50 bg-opacity-90 rounded-lg pointer-events-none"
             >
               <p className="text-blue-500">Drop image here</p>
@@ -189,7 +192,7 @@ const PostCreationForm = ({ user, onPostCreated }: PostCreationFormProps) => {
           )}
         </div>
         <div className="flex justify-between items-center">
-          <FileUpload 
+          <FileUpload
             user={user}
             onUploadComplete={(url) => setImageUrl(url)}
             onError={(error) => console.error('Upload error:', error)}
