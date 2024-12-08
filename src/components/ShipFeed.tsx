@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import { LogOut } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Database } from '../lib/database.types';
 import HashtagAutoComplete from './HashtagAutoComplete';
 import FileUpload from './FileUpload';
-import TimeAgo from './TimeAgo';
+import PostCard from './PostCard';
 
 type Tables = Database['public']['Tables'];
 type DbUser = Tables['users']['Row'];
@@ -308,66 +307,10 @@ const ShipFeed = ({ user }: Props) => {
 
       {/* Posts Feed */}
       <div className="space-y-4">
-        {posts.map((post) => (
-          <div key={post.id} className="bg-white rounded-lg p-4 shadow-sm border">
-            <div className="flex gap-3">
-              <Link 
-                to={`/profile/${post.user_id}`}
-                className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center hover:opacity-90"
-              >
-                {post.users?.avatar_url ? (
-                  <img 
-                    src={post.users.avatar_url} 
-                    alt={post.users.full_name || 'User avatar'} 
-                    className="w-8 h-8 rounded-full"
-                  />
-                ) : (
-                  post.users?.full_name?.[0] || 'A'
-                )}
-              </Link>
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <Link 
-                    to={`/profile/${post.user_id}`}
-                    className="font-medium hover:text-gray-600"
-                  >
-                    {post.users?.full_name || 'Anonymous'}
-                  </Link>
-                  {(post.users?.current_streak ?? 0) > 0 && (
-                    <span className="text-sm text-gray-500">
-                      {post.users.current_streak} 🌶️
-                    </span>
-                  )}
-                </div>
-                <div className="font-medium">
-                  {post.content}
-                  {post.project_id && post.projects && (
-                    <>
-                      {' '}
-                      <Link 
-                        to={`/projects/${post.project_id}`}
-                        className="text-blue-600 hover:underline"
-                      >
-                        #{post.projects.name}
-                      </Link>
-                    </>
-                  )}
-                </div>
-                {post.image_url && (
-                  <img
-                    src={post.image_url}
-                    alt="Uploaded content"
-                    className="mt-2 rounded-lg border"
-                  />
-                )}
-                <div className="text-gray-500 text-sm mt-1">
-                  <TimeAgo date={post.created_at} />
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+  {posts.map((post) => (
+    <PostCard key={post.id} post={post} />
+  ))}
+</div>
     </div>
   );
 };
