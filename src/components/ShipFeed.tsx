@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { Database } from '../lib/database.types';
-import PostCard from './PostCard';
 import PostCreationForm from './PostCreationForm';
 import FeedHeader from './FeedHeader';
+import PostsList from './PostsList';
+import FeedLoadingSkeleton from './FeedLoadingSkeleton';
+import AuthGate from './AuthGate';
 
 type Tables = Database['public']['Tables'];
 type DbUser = Tables['users']['Row'];
@@ -22,6 +24,7 @@ type Props = {
 const ShipFeed = ({ user }: Props) => {
   const [posts, setPosts] = useState<PostWithUserAndProject[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     fetchPosts();
@@ -29,7 +32,8 @@ const ShipFeed = ({ user }: Props) => {
 
   const fetchPosts = async () => {
     try {
-      const { data, error } = await supabase
+      setError(null);
+      const { data, error: supabaseError } = await supabase
         .from('posts')
         .select(`
           id,
@@ -54,10 +58,11 @@ const ShipFeed = ({ user }: Props) => {
         `)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (supabaseError) throw supabaseError;
       setPosts(data || []);
-    } catch (error) {
-      console.error('Error fetching posts:', error);
+    } catch (err) {
+      console.error('Error fetching posts:', err);
+      setError(err instanceof Error ? err : new Error('Failed to fetch posts'));
     } finally {
       setLoading(false);
     }
@@ -68,29 +73,38 @@ const ShipFeed = ({ user }: Props) => {
   };
 
   if (loading) {
-    return <div className="max-w-2xl mx-auto p-4">Loading...</div>;
+    return <FeedLoadingSkeleton />;
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-2xl mx-auto p-4">
+        <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg">
+          <h2 className="font-bold mb-2">Error Loading Feed</h2>
+          <p>{error.message}</p>
+          <button 
+            onClick={() => fetchPosts()}
+            className="mt-2 text-sm underline hover:no-underline"
+          >
+            Try again
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="max-w-2xl mx-auto p-4">
       <FeedHeader user={user} />
 
-      {user ? (
+      <AuthGate user={user}>
         <PostCreationForm 
           user={user} 
           onPostCreated={handlePostCreated} 
         />
-      ) : (
-        <div className="mb-8 bg-white rounded-lg p-4 shadow-sm border">
-          <p>Please sign in to post updates</p>
-        </div>
-      )}
+      </AuthGate>
 
-      <div className="space-y-4">
-        {posts.map((post) => (
-          <PostCard key={post.id} post={post} />
-        ))}
-      </div>
+      <PostsList posts={posts} />
     </div>
   );
 };
