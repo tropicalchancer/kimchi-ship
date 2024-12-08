@@ -11,12 +11,12 @@ type DbPost = Tables['posts']['Row'];
 type DbProject = Tables['projects']['Row'];
 
 interface PostWithUserAndProject extends DbPost {
-  users: DbUser | null; // Allow null
+  users: DbUser | null;
   projects?: DbProject | null;
 }
 
 interface PostCreationFormProps {
-  user: DbUser | null; // Allow null
+  user: DbUser | null;
   onPostCreated: (post: PostWithUserAndProject) => void;
 }
 
@@ -36,11 +36,8 @@ const PostCreationForm = ({ user, onPostCreated }: PostCreationFormProps) => {
     e.preventDefault();
     e.stopPropagation();
     setDragCounter((prev) => prev + 1);
-    const items = e.dataTransfer.items;
-    if (items && items.length > 0) {
-      if (items[0].kind === 'file') {
-        setIsDragging(true);
-      }
+    if (e.dataTransfer.items?.[0]?.kind === 'file') {
+      setIsDragging(true);
     }
   };
 
@@ -72,17 +69,14 @@ const PostCreationForm = ({ user, onPostCreated }: PostCreationFormProps) => {
 
       const fileExt = file.name.split('.').pop();
       const fileName = `${Math.random().toString(36).substring(2)}${Date.now()}.${fileExt}`;
-      const filePath = `${user?.id}/${fileName}`;
+      const filePath = `${user?.id || 'anonymous'}/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('uploads')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false,
-        });
+        .upload(filePath, file, { cacheControl: '3600', upsert: false });
 
       if (uploadError) {
-        throw new Error('Error uploading file');
+        throw uploadError;
       }
 
       const { data: urlData } = supabase.storage
@@ -107,12 +101,12 @@ const PostCreationForm = ({ user, onPostCreated }: PostCreationFormProps) => {
       const { data: sessionData } = await supabase.auth.getSession();
       const authUserId = sessionData?.session?.user.id;
 
-      if (authUserId !== user?.id) {
-        throw new Error('Authenticated user ID does not match frontend user ID');
+      if (!user || authUserId !== user.id) {
+        throw new Error('Authenticated user ID does not match the frontend user');
       }
 
       const postData = {
-        content: `✅ ${newPost}`,
+        content: newPost,
         user_id: authUserId,
         project_id: linkedProjectId,
         image_url: imageUrl,
@@ -149,7 +143,8 @@ const PostCreationForm = ({ user, onPostCreated }: PostCreationFormProps) => {
       if (post) {
         onPostCreated({
           ...post,
-          users: post.users || null, // Handle missing user
+          users: post.users || null,
+          projects: post.projects || null,
         } as PostWithUserAndProject);
         setNewPost('');
         setLinkedProjectId(null);
@@ -176,17 +171,11 @@ const PostCreationForm = ({ user, onPostCreated }: PostCreationFormProps) => {
         >
           <HashtagAutoComplete
             value={newPost}
-            onChange={(value: string) => {
-              setNewPost(value);
-            }}
-            onProjectLink={(projectId: string | null) => {
-              setLinkedProjectId(projectId);
-            }}
+            onChange={(value: string) => setNewPost(value)}
+            onProjectLink={(projectId: string | null) => setLinkedProjectId(projectId)}
           />
           {isDragging && (
-            <div
-              className="absolute inset-0 flex items-center justify-center bg-blue-50 bg-opacity-90 rounded-lg pointer-events-none"
-            >
+            <div className="absolute inset-0 flex items-center justify-center bg-blue-50 bg-opacity-90 rounded-lg pointer-events-none">
               <p className="text-blue-500">Drop image here</p>
             </div>
           )}

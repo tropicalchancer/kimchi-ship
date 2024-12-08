@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Upload, AlertCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react'; //i removed Upload which was before alertcircle before
 import { supabase } from '../lib/supabase';
 import { Database } from '../lib/database.types';
 
