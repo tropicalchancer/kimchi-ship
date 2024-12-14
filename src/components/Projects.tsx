@@ -128,11 +128,12 @@ const Projects: React.FC<ProjectsProps> = ({ user }) => {
       setCreating(false);
     }
   };
-
-  const formatDate = (dateString: string | null): string => {
-    if (!dateString) return '';
-    return new Date(dateString).toLocaleDateString();
-  };
+ 
+  // const formatDate = (dateString: string | null): string => {
+  //   if (!dateString) return '';
+  //   return new Date(dateString).toLocaleDateString();
+  // };
+  
 
   if (loading) {
     return (

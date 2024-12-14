@@ -13,7 +13,7 @@ type DbPost = Tables['posts']['Row'];
 type DbProject = Tables['projects']['Row'];
 
 interface PostWithUserAndProject extends DbPost {
-  users: DbUser;
+  users: DbUser | null;  // Changed from DbUser to DbUser | null
   projects?: DbProject | null;
 }
 
@@ -59,7 +59,15 @@ const ShipFeed = ({ user }: Props) => {
         .order('created_at', { ascending: false });
 
       if (supabaseError) throw supabaseError;
-      setPosts(data || []);
+      
+      // Add proper type assertion for the data
+      const typedPosts = (data || []).map(post => ({
+        ...post,
+        users: post.users || null,
+        projects: post.projects || null
+      })) as PostWithUserAndProject[];
+      
+      setPosts(typedPosts);
     } catch (err) {
       console.error('Error fetching posts:', err);
       setError(err instanceof Error ? err : new Error('Failed to fetch posts'));

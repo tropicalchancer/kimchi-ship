@@ -155,6 +155,10 @@ const PostCreationForm = ({ user, onPostCreated }: PostCreationFormProps) => {
     }
   };
 
+  if (!user) {
+    return null;
+  }
+
   return (
     <div className="mb-8 bg-white rounded-lg p-4 shadow-sm border">
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -182,7 +186,7 @@ const PostCreationForm = ({ user, onPostCreated }: PostCreationFormProps) => {
         </div>
         <div className="flex justify-between items-center">
           <FileUpload
-            user={user}
+            user={user}  
             onUploadComplete={(url) => setImageUrl(url)}
             onError={(error) => console.error('Upload error:', error)}
           />
