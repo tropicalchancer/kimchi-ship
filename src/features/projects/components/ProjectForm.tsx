@@ -2,8 +2,8 @@
 
 import React, { useState } from 'react'
 import { X } from 'lucide-react'
-import { supabase } from '../lib/supabase'
-import type { Project } from '@/types/project'; // Using an absolute path (requires `baseUrl` in `tsconfig.json`)
+import { supabase } from '../../shared/services/supabase'
+import type { Project } from '../types/project'; // Using an absolute path (requires `baseUrl` in `tsconfig.json`)
 // or
 
 

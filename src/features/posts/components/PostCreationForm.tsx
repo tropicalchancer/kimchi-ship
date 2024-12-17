@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Database } from '../lib/database.types';
-import { supabase } from '../lib/supabase';
-import HashtagAutoComplete from './HashtagAutoComplete';
-import FileUpload from './FileUpload';
+import { Database } from '../../shared/types/database.types';
+import { supabase } from '../../shared/services/supabase';
+import HashtagAutoComplete from '../../shared/components/HashtagAutoComplete';
+import FileUpload from '../../shared/components/FileUpload';
 import { LogOut } from 'lucide-react';
 
 type Tables = Database['public']['Tables'];

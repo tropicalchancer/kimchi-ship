@@ -1,9 +1,18 @@
+// At the top of MainLayout.tsx
+export interface MainLayoutProps {
+  userId: string;
+  user?: UserType; // if you need this
+  children: React.ReactNode;
+}
+
+// Now remove the line: import { MainLayoutProps } from '../shared/components/mainLayout';
+
+
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { Home, User, Package } from 'lucide-react';
-import StreaksList from './StreaksList';
-import { MainLayoutProps } from '../types';
-import { User as UserType } from '../types/project';
+import StreaksList from '../../posts/components/StreaksList';
+import { User as UserType } from '../../projects/types/project';
 
 // Navigation item type
 interface NavItem {

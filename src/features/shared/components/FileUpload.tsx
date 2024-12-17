@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { AlertCircle } from 'lucide-react'; //i removed Upload which was before alertcircle before
-import { supabase } from '../lib/supabase';
-import { Database } from '../lib/database.types';
+import { supabase } from '../../shared/services/supabase';
+import { Database } from '../../shared/types/database.types';
 
 type User = Database['public']['Tables']['users']['Row'];
 

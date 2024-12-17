@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, Loader2, Package } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
-import { Database } from '../lib/database.types';
-import TimeAgo from './TimeAgo';
+import { supabase } from '../../shared/services/supabase';
+import { Database } from '../../shared/types/database.types';
+import TimeAgo from '../../shared/components/TimeAgo';
 
 type Tables = Database['public']['Tables'];
 type Project = Tables['projects']['Row'];
@@ -28,7 +28,7 @@ interface ProjectsProps {
   user: User | null;
 }
 
-const Projects: React.FC<ProjectsProps> = ({ user }) => {
+const Projects = ({ user }: ProjectsProps) => {
   const { projectId } = useParams();
   const [projects, setProjects] = useState<ProjectWithPosts[]>([]);
   const [selectedProject, setSelectedProject] = useState<ProjectWithPosts | null>(null);
@@ -52,7 +52,7 @@ const Projects: React.FC<ProjectsProps> = ({ user }) => {
   const fetchProjects = async () => {
     try {
       setLoading(true);
-      
+
       const { data, error } = await supabase
         .from('projects')
         .select(`
@@ -74,8 +74,8 @@ const Projects: React.FC<ProjectsProps> = ({ user }) => {
       const projectsWithCounts = (data || []).map(project => ({
         ...project,
         posts: (project.posts || [])
-          .filter((post): post is PostWithUser => post !== null)
-          .sort((a, b) => 
+          .filter((post: PostWithUser | null): post is PostWithUser => post !== null)
+          .sort((a: PostWithUser, b: PostWithUser) =>
             new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
           ),
         _count: {
@@ -97,7 +97,7 @@ const Projects: React.FC<ProjectsProps> = ({ user }) => {
 
     try {
       setCreating(true);
-      
+
       const { data: project, error } = await supabase
         .from('projects')
         .insert({
@@ -128,12 +128,6 @@ const Projects: React.FC<ProjectsProps> = ({ user }) => {
       setCreating(false);
     }
   };
- 
-  // const formatDate = (dateString: string | null): string => {
-  //   if (!dateString) return '';
-  //   return new Date(dateString).toLocaleDateString();
-  // };
-  
 
   if (loading) {
     return (
@@ -192,14 +186,14 @@ const Projects: React.FC<ProjectsProps> = ({ user }) => {
               {selectedProject.posts.map(post => (
                 <div key={post.id} className="bg-white rounded-lg p-4 shadow-sm">
                   <div className="flex gap-3">
-                    <Link 
+                    <Link
                       to={`/profile/${post.users?.id}`}
                       className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center"
                     >
                       {post.users?.avatar_url ? (
-                        <img 
-                          src={post.users.avatar_url} 
-                          alt={post.users.full_name || 'User'} 
+                        <img
+                          src={post.users.avatar_url}
+                          alt={post.users.full_name || 'User'}
                           className="w-8 h-8 rounded-full"
                         />
                       ) : (
@@ -208,7 +202,7 @@ const Projects: React.FC<ProjectsProps> = ({ user }) => {
                     </Link>
                     <div>
                       <div className="flex items-center gap-2">
-                        <Link 
+                        <Link
                           to={`/profile/${post.users?.id}`}
                           className="font-medium hover:text-gray-600"
                         >

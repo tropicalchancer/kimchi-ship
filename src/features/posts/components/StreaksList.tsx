@@ -1,21 +1,30 @@
-import React from 'react';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
-import { User } from '../types/project';
-import { StreaksListProps } from '../types';
+import { supabase } from '../../shared/services/supabase';
 
-interface StreakUser extends Pick<User, 'id' | 'full_name' | 'avatar_url' | 'current_streak'> {
+// Define props inline if the external import is causing errors.
+// If you have a proper definition elsewhere, adjust the import path accordingly.
+interface StreaksListProps {
+  // If you need props, define them here. For now it's empty since `currentUser` isn't used.
+}
+
+// Since importing `User` from '../../projects/types/project' caused errors, define a matching type inline.
+interface StreakUser {
+  id: string;
+  full_name: string;
+  avatar_url: string | null;
+  current_streak: number | null;
   isPro?: boolean;
 }
 
-const StreaksList = ({ currentUser }: StreaksListProps) => {
+const StreaksList: React.FC<StreaksListProps> = () => {
   const [users, setUsers] = useState<StreakUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     fetchTopStreaks();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchTopStreaks = async () => {

@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Session, User } from '@supabase/supabase-js'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { supabase } from './lib/supabase'
-import ShipFeed from './components/ShipFeed'
-import UserProfile from './components/UserProfile'
-import Auth from './components/Auth'
-import Projects from './components/Projects'
-import Navigation from './components/Navigation'
-import { Database } from './lib/database.types'
+import { supabase } from './features/shared/services/supabase'
+import ShipFeed from './features/posts/components/ShipFeed'
+import UserProfile from './features/shared/components/UserProfile'
+import Auth from './features/auth/components/Auth'
+import Projects from './features/projects/components/Projects'
+import Navigation from './features/shared/components/Navigation'
+import { Database } from './features/shared/types/database.types'
 
 type Profile = Database['public']['Tables']['users']['Row']
 

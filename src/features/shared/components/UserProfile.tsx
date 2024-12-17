@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { User as UserIcon, Flame, Calendar } from 'lucide-react';
-import { supabase } from '../lib/supabase';
-import { Database } from '../lib/database.types';
+import { supabase } from '../../shared/services/supabase';
+import { Database } from '../../shared/types/database.types';
 import TimeAgo from './TimeAgo';
 
 // Type definitions

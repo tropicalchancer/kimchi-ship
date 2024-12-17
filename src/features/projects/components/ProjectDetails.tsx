@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Calendar, MessageSquare } from 'lucide-react';
-import { supabase } from '../lib/supabase';
-import { Database } from '../lib/database.types';
+import { supabase } from '../../shared/services/supabase';
+import { Database } from '../../shared/types/database.types';
 
 type User = Database['public']['Tables']['users']['Row'];
 type Project = Database['public']['Tables']['projects']['Row'];

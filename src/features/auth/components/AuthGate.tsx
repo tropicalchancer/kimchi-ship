@@ -1,4 +1,4 @@
-import { Database } from '../lib/database.types';
+import { Database } from '../../shared/types/database.types';
 
 type Tables = Database['public']['Tables'];
 type DbUser = Tables['users']['Row'];

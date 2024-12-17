@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
-import UserAvatar from './UserAvatar';
-import TimeAgo from './TimeAgo';
-import { Database } from '../lib/database.types';
+import UserAvatar from '../../shared/components/UserAvatar';
+import TimeAgo from '../../shared/components/TimeAgo';
+import { Database } from '../../shared/types/database.types';
 
 type Tables = Database['public']['Tables'];
 type DbUser = Tables['users']['Row'];

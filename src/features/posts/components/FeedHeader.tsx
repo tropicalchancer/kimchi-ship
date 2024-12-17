@@ -1,8 +1,8 @@
 import { useState } from 'react';
 //import { Link } from 'react-router-dom';
 import { LogOut } from 'lucide-react';
-import { supabase } from '../lib/supabase';
-import { Database } from '../lib/database.types';
+import { supabase } from '../../shared/services/supabase';
+import { Database } from '../../shared/types/database.types';
 
 type Tables = Database['public']['Tables'];
 type DbUser = Tables['users']['Row'];

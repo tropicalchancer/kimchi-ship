@@ -1,21 +1,15 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
-import { Database } from '../lib/database.types';
+import { supabase } from '../../shared/services/supabase';
+import { Database } from '../../shared/types/database.types';
+import { PostWithUserAndProject } from '../../shared/types/post.types'; // Importing the unified type
 import PostCreationForm from './PostCreationForm';
 import FeedHeader from './FeedHeader';
 import PostsList from './PostsList';
 import FeedLoadingSkeleton from './FeedLoadingSkeleton';
-import AuthGate from './AuthGate';
+import AuthGate from '../../auth/components/AuthGate';
 
 type Tables = Database['public']['Tables'];
 type DbUser = Tables['users']['Row'];
-type DbPost = Tables['posts']['Row'];
-type DbProject = Tables['projects']['Row'];
-
-interface PostWithUserAndProject extends DbPost {
-  users: DbUser | null;  // Changed from DbUser to DbUser | null
-  projects?: DbProject | null;
-}
 
 type Props = {
   user: DbUser | null;
@@ -48,7 +42,10 @@ const ShipFeed = ({ user }: Props) => {
             full_name,
             avatar_url,
             current_streak,
-            email
+            email,
+            created_at,
+            last_post_date,
+            longest_streak
           ),
           projects (
             id,
@@ -59,14 +56,13 @@ const ShipFeed = ({ user }: Props) => {
         .order('created_at', { ascending: false });
 
       if (supabaseError) throw supabaseError;
-      
-      // Add proper type assertion for the data
+
       const typedPosts = (data || []).map(post => ({
         ...post,
         users: post.users || null,
         projects: post.projects || null
       })) as PostWithUserAndProject[];
-      
+
       setPosts(typedPosts);
     } catch (err) {
       console.error('Error fetching posts:', err);

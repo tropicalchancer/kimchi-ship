@@ -1,4 +1,4 @@
-import { Database } from '../lib/database.types';
+import { Database } from '../../shared/types/database.types';
 import PostCard from './PostCard';
 
 type Tables = Database['public']['Tables'];
